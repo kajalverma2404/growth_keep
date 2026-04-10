@@ -1,0 +1,7 @@
+{
+  "name": "Journal Growth ",
+  "description": "An advanced AI behavioral scientist and growth strategist that analyzes your journal entries to provide deep emotional intelligence and performance insights.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
