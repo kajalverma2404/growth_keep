@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../../utils/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI, Type } from "@google/genai";
+import { generateContentWithRetry } from '../../utils/aiUtils';
 
 interface ResourcesProps {
   t?: (key: string) => string;
@@ -55,9 +56,10 @@ const Resources: React.FC<ResourcesProps> = ({ t }) => {
   const generateResources = async () => {
     if (isGenerating) return;
     
-    // Check if API key is available
+    // Check if at least one AI API key is available
     const apiKey = (process as any).env.API_KEY || process.env.GEMINI_API_KEY;
-    if (!apiKey && (window as any).aistudio) {
+    const openAiKey = (process as any).env.OPENAI_API_KEY;
+    if (!apiKey && !openAiKey && (window as any).aistudio) {
       alert('Please select an API key in the top bar to enable AI features.');
       return;
     }
@@ -66,8 +68,8 @@ const Resources: React.FC<ResourcesProps> = ({ t }) => {
     try {
       const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
       const recentContent = entries.slice(0, 5).map((e: any) => e.content).join('\n');
-      
-      const response = await ai.models.generateContent({
+
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: `Based on these recent journal entries, suggest 3 high-quality resources (books, podcasts, or articles) that would help the user grow. Return a JSON array of objects with title, url (real or placeholder), type (book, podcast, article), and description.\n\nRecent Journals:\n${recentContent}`,
         config: {

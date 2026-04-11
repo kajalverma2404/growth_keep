@@ -568,12 +568,12 @@ export default function Dashboard() {
 
   const generateAggregatedInsight = async (type: string, force = false) => {
     const apiKey = process.env.GEMINI_API_KEY;
-    
-    if (!apiKey && window.aistudio) {
+    const openAiKey = (process as any).env.OPENAI_API_KEY;
+
+    if (!apiKey && !openAiKey && window.aistudio) {
       const hasKey = await window.aistudio.hasSelectedApiKey();
       if (!hasKey) {
         setToast({ message: 'Please select an API key in the top bar to enable AI features.', type: 'error' });
-        // If the user removed the button, we might need to show it again or prompt them
         return;
       }
     }
@@ -949,7 +949,7 @@ export default function Dashboard() {
       const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: [
-          { role: 'user', parts: [{ text: `Context: Here are my recent journal entries and growth scores: ${JSON.stringify(historyData)}. Question: ${userMsg}` }] }
+          { role: 'user', parts: [{ text: `Context: Here are my recent journal entries and growth scores: ${JSON.stringify(historyData)}. Question: ${userMsg}` }] },
         ],
         config: {
           systemInstruction: `You are a Growth Coach. Use the provided journal history to answer the user's questions about their progress, patterns, and growth. Be supportive, analytical, and concise. IMPORTANT: The user's preferred language is ${language}. Please respond entirely in ${language}.`
@@ -1094,7 +1094,7 @@ export default function Dashboard() {
       const historyData = await historyRes.json();
       const historyText = historyData.map((e: any) => `[${new Date(e.created_at).toLocaleDateString()}]: ${e.content}`).join('\n\n') || 'No previous history.';
 
-      console.log('[ANALYSIS] Using model: gemini-3-flash-preview');
+      console.log('[ANALYSIS] Using model: gemini-3-flash-preview (with OpenAI fallback)');
       const apiKey = process.env.GEMINI_API_KEY;
       const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
       const response = await generateContentWithRetry(ai, {

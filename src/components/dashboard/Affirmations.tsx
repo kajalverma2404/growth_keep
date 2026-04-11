@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../../utils/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI } from "@google/genai";
+import { generateContentWithRetry } from '../../utils/aiUtils';
 
 interface AffirmationsProps {
   t?: (key: string) => string;
@@ -57,9 +58,10 @@ const Affirmations: React.FC<AffirmationsProps> = ({ t }) => {
   const generateAffirmation = async () => {
     if (isGenerating) return;
     
-    // Check if API key is available
+    // Check if at least one AI API key is available
     const apiKey = (process as any).env.API_KEY || process.env.GEMINI_API_KEY;
-    if (!apiKey && (window as any).aistudio) {
+    const openAiKey = (process as any).env.OPENAI_API_KEY;
+    if (!apiKey && !openAiKey && (window as any).aistudio) {
       alert('Please select an API key in the top bar to enable AI features.');
       return;
     }
@@ -68,8 +70,8 @@ const Affirmations: React.FC<AffirmationsProps> = ({ t }) => {
     try {
       const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
       const recentContent = entries.slice(0, 3).map((e: any) => e.content).join('\n');
-      
-      const response = await ai.models.generateContent({
+
+      const response = await generateContentWithRetry(ai, {
         model: "gemini-3-flash-preview",
         contents: `Based on these recent journal entries, generate a powerful, personalized daily affirmation for the user. Keep it short, positive, and in the first person ("I am...").\n\nRecent Journals:\n${recentContent}`,
       });
