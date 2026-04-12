@@ -4,6 +4,7 @@ import { useAuth } from '../components/AuthContext';
 import { Sparkles, Loader2, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import { apiFetch } from '../utils/api';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ const Login: React.FC = () => {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       console.log(`Attempting login for: ${normalizedEmail}`);
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail, password }),

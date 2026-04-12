@@ -4,6 +4,7 @@ import { useAuth } from '../components/AuthContext';
 import { Sparkles, Loader2, ArrowRight, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import { apiFetch } from '../utils/api';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
@@ -27,7 +28,7 @@ const Signup: React.FC = () => {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       console.log(`Attempting signup for: ${normalizedEmail}`);
-      const res = await fetch('/api/auth/signup', {
+      const res = await apiFetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email: normalizedEmail, password }),
