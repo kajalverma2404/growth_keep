@@ -25,9 +25,10 @@ const GoogleLoginButton: React.FC = () => {
     const height = 600;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
-    
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+
     window.open(
-      '/api/auth/google',
+      `${baseUrl}/api/auth/google`,
       'google_oauth',
       `width=${width},height=${height},left=${left},top=${top}`
     );
